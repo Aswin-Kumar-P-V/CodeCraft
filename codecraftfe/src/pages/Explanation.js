@@ -3,19 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
+import  { useRef } from "react";
 
-import {
-  Box,
-  Typography,
-  useTheme,
-  useMediaQuery,
-  TextField,
-  Button,
-  Alert,
-  Collapse,
-  Card,
-} from "@mui/material";
-import Dashboard from "./Dashboard";
+import { Box, Typography, useTheme, useMediaQuery, TextField, Button, Alert, Collapse, Card, IconButton } from "@mui/material";
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+
 
 const Explanation = () => {
   const theme = useTheme();
@@ -45,6 +37,13 @@ const Explanation = () => {
       setTimeout(() => {
         setError("");
       }, 5000);
+    }
+  };
+
+  const handleCopy = () => {
+    if (explanation) {
+      navigator.clipboard.writeText(explanation);
+      toast.success("Copied to clipboard");
     }
   };
 
@@ -89,26 +88,33 @@ const Explanation = () => {
         </Typography>
       </form>
       {explanation ? (
-        <Card
+      <Card
+        sx={{
+          mt: 4,
+          border: 1,
+          boxShadow: 0,
+          height: "500px",
+          borderRadius: 5,
+          borderColor: "natural.medium",
+          bgcolor: "background.default",
+          position: 'relative', // Add this line
+        }}
+      >
+        <Typography
           sx={{
-            mt: 4,
-            border: 1,
-            boxShadow: 0,
-            height: "500px",
-            borderRadius: 5,
-            borderColor: "natural.medium",
-            bgcolor: "background.default",
+            whiteSpace: "pre-line",
           }}
+          p={2}
         >
-          <Typography
-            sx={{
-              whiteSpace: "pre-line",
-            }}
-            p={2}
-          >
-            {explanation}
-          </Typography>
-        </Card>
+          {explanation}
+        </Typography>
+        <IconButton 
+          onClick={handleCopy}
+          sx={{ position: 'absolute', top: 8, right: 8 }} // Position the button at the top right corner of the Card
+        >
+          <FileCopyIcon />
+        </IconButton>
+      </Card>
       ) : (
         <Card
           sx={{
@@ -138,3 +144,4 @@ const Explanation = () => {
 };
 
 export default Explanation;
+
