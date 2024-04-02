@@ -238,7 +238,7 @@ async function refactorController(req, res) {
       const response1 = await openai.chat.completions.create({
         model: "gpt-3.5-turbo-0125",
         messages: [
-          { role: "system", content: `only give the code,I have a function that needs restructuring code without changing its external behavior. Can you help me complete it?${text}` },
+          { role: "system", content: `only give the code,I have a function that needs refactoring. Can you help me complete it?${text}` },
           { role: "user", content: text },
         ],
         temperature: 0.7,
@@ -326,3 +326,4 @@ async function generateTitleController(req, res) {
   }
 }
 module.exports = { generateTitleController , chatController,codeController, explanationController , optimizationController , commentsController , refactorController};
+

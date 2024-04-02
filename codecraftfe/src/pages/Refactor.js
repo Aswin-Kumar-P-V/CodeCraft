@@ -1,19 +1,11 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
+import { Box, Typography, useTheme, useMediaQuery, TextField, Button, Alert, Collapse, Card, IconButton } from  "@mui/material";
+import FileCopyIcon from '@mui/icons-material/FileCopy';
 
-import {
-  Box,
-  Typography,
-  useTheme,
-  useMediaQuery,
-  TextField,
-  Button,
-  Alert,
-  Collapse,
-  Card,
-} from "@mui/material";
 
 const Refactor = () => {
   const theme = useTheme();
@@ -43,6 +35,13 @@ const Refactor = () => {
       setTimeout(() => {
         setError("");
       }, 5000);
+    }
+  };
+
+  const handleCopy = () => {
+    if (refactor) {
+      navigator.clipboard.writeText(refactor);
+      toast.success("Copied to clipboard");
     }
   };
 
@@ -96,11 +95,18 @@ const Refactor = () => {
             borderRadius: 5,
             borderColor: "natural.medium",
             bgcolor: "background.default",
+            position: 'relative', // Add this line
           }}
         >
           <Typography p={2} sx={{ whiteSpace: "pre-line" }}>
             {refactor}
           </Typography>
+          <IconButton 
+            onClick={handleCopy}
+            sx={{ position: 'absolute', top: 8, right: 8 }} // Position the button at the top right corner of the Card
+          >
+            <FileCopyIcon />
+          </IconButton>
         </Card>
       ) : (
         <Card
