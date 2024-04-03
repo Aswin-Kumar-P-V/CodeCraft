@@ -1,10 +1,9 @@
 import React from 'react'
+import Login from './Login'
 
 const Homepage = () => {
     return (
-        <div>
-            <h1>Homepage</h1>
-        </div>
+        <Login />
     )
 }
 

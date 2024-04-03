@@ -36,7 +36,7 @@ const Login = () => {
       console.log("RESPONSE",response);
       localStorage.setItem("authToken", true);
       toast.success("Login succesfully");
-      navigate("/dash");
+      navigate("/tools");
     } catch (err) {
       console.log(error);
       if (err.response.data.error) {

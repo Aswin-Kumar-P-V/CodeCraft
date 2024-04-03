@@ -20,6 +20,7 @@ import Optimization from "./pages/Optimization";
 import Commenter from "./pages/Commenter";
 import Tools from "./pages/Tools";
 import Refactor from "./pages/Refactor";
+import BugFixer from "./pages/BugFix";
 function App() {
   const theme = useMemo(() => createTheme(themeSettings()));
 
@@ -39,6 +40,7 @@ function App() {
           <Route path="/commenter" element={<Commenter />} />
           <Route path="/tools" element={<Tools />} />
           <Route path="/refactor" element={<Refactor />} />
+          <Route path="/bugfix" element={<BugFixer />} />
         </Routes>
       </ThemeProvider>
     </>

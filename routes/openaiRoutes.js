@@ -7,6 +7,8 @@ const {
   refactorController,
   generateTitleController,
   chatController,
+  promtToCodeGeneratorController,
+  bugFixController
 } = require("../controllers/openaiController.js");
 
 const router = express.Router();
@@ -19,5 +21,7 @@ router.post("/commenter" , commentsController)
 router.post("/refactor" , refactorController)
 router.post("/title" , generateTitleController)
 router.post("/chat" , chatController) 
+router.post("/prompt" , promtToCodeGeneratorController)
+router.post("/bugfix" , bugFixController)
 
 module.exports = router;
