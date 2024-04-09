@@ -5,9 +5,11 @@ import DescriptionRounded from "@mui/icons-material/DescriptionRounded";
 import FormatAlignLeftOutlined from "@mui/icons-material/FormatAlignLeftOutlined";
 import ChatRounded from "@mui/icons-material/ChatRounded";
 import Generator from "./Generator";
+import Login from "./Login";
 
 const Tools = () => {
   const navigate = useNavigate();
+  const loggedIn = JSON.parse(localStorage.getItem("authToken"));
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -15,7 +17,8 @@ const Tools = () => {
   };
 
   return (
-    <Grid container spacing={5}>
+    <>
+    {loggedIn ? (<Grid container spacing={5}>
       <Grid item xs={7}>
       <Card sx={{ p: 0, mt: 5, mb: 5, marginLeft: '30px', border: '1px solid black', boxShadow: '5px 5px 15px rgba(0, 0, 0, 0.3)' }}>
           <Generator />
@@ -246,7 +249,9 @@ const Tools = () => {
           </table>
         </Card>
       </Grid>
-    </Grid>
+    </Grid>) : (<Login />)}
+    </>
+    
   );
 };
 export default Tools;

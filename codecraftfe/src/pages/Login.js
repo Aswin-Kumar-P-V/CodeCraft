@@ -25,6 +25,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const loggedIn = JSON.parse(localStorage.getItem("authToken"));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,7 +35,8 @@ const Login = () => {
         password,
       });
       console.log("RESPONSE",response);
-      localStorage.setItem("authToken", true);
+      localStorage.setItem("authToken", JSON.stringify(true)); // Convert boolean to string before storing
+      localStorage.setItem("userEmail", email); // Store user email in local storage
       toast.success("Login succesfully");
       navigate("/tools");
     } catch (err) {
@@ -51,6 +53,7 @@ const Login = () => {
   };
 
   return (
+    <>
     <Box
       width={isNotMobile ? "40%" : "80%"}
       p={"2rem"}
@@ -103,6 +106,7 @@ const Login = () => {
         </Typography>
       </form>
     </Box>
+    </>
   );
 };
 

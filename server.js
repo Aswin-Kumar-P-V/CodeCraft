@@ -6,10 +6,11 @@ const colors = require("colors");
 const cors = require("cors");
 const connectDB = require("./config/db");
 
-
 //routes path
 const authRoutes = require("./routes/authRoutes");
 const openaiRoutes = require("./routes/openaiRoutes");
+const recordRoutes = require("./routes/recordRoutes"); // Import the router
+
 //dotenv
 const dotenv = require("dotenv");
 const errorHandler = require("./middleware/errorMiddleware");
@@ -20,7 +21,6 @@ connectDB();
 
 //rest app
 const app = express();
-
 
 //middlwares
 app.use(cors());
@@ -33,11 +33,8 @@ const PORT = process.env.PORT || 8080;
 
 //api routes
 app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/openai",openaiRoutes)
-
-
-
-
+app.use("/api/v1/openai", openaiRoutes);
+app.use("/api/v1/record", recordRoutes); // Use the router
 
 //listen server
 app.listen(PORT, () => {

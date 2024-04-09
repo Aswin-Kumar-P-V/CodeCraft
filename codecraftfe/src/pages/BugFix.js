@@ -5,6 +5,7 @@ import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import { Box, Typography, useTheme, useMediaQuery, TextField, Button, Alert, Collapse, Card, IconButton } from "@mui/material";
 import FileCopyIcon from '@mui/icons-material/FileCopy';
+import Login from "./Login";
 
 
 const BugFixer = () => {
@@ -16,15 +17,18 @@ const BugFixer = () => {
   const [text, settext] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const loggedIn = JSON.parse(localStorage.getItem("authToken"));
+  const loggedInEmail = localStorage.getItem("userEmail");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let data;
     try {
-      const { data } = await axios.post('/api/v1/openai/bugfix', {
+      data= await axios.post('/api/v1/openai/bugfix', {
         text
       });
       console.log(data.message);
-      setCode(data.data);
+      setCode(data.data.data);
     } catch (err) {
       console.log(err);
       if (err.response.data.error) {
@@ -36,6 +40,17 @@ const BugFixer = () => {
         setError("");
       }, 5000);
     }
+    const userPrompt = text + "\n After Bug Fixing : ";
+    try {
+      await axios.post('/api/v1/record/save-record', {
+        Userprompt: userPrompt,
+        GeneratedResult: data.data.data, // Use the same data variable here
+        userEmail: loggedInEmail
+      });
+      console.log('Record saved!');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleCopy = () => {
@@ -44,7 +59,8 @@ const BugFixer = () => {
   };
 
   return (
-    <Box
+    <>
+    { loggedIn ? (     <Box
       width={isNotMobile ? "40%" : "80%"}
       p={"2rem"}
       m={"2rem auto"}
@@ -61,6 +77,7 @@ const BugFixer = () => {
         <Typography variant="h3">Fixes Bugs</Typography>
         <TextField
           label="enter the code to fix the bugs"
+          multiline
           type="text"
           required
           margin="normal"
@@ -132,7 +149,8 @@ const BugFixer = () => {
           </Typography>
         </Card>
       )}
-    </Box>
+    </Box>) : ( <Login /> )}
+    </>
   );
 };
 

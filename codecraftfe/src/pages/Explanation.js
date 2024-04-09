@@ -7,6 +7,7 @@ import  { useRef } from "react";
 
 import { Box, Typography, useTheme, useMediaQuery, TextField, Button, Alert, Collapse, Card, IconButton } from "@mui/material";
 import FileCopyIcon from '@mui/icons-material/FileCopy';
+import Login from "./Login";
 
 
 const Explanation = () => {
@@ -18,15 +19,18 @@ const Explanation = () => {
   const [text, setText] = useState("");
   const [explanation, setExplanation] = useState("");
   const [error, setError] = useState("");
+  const loggedIn = JSON.parse(localStorage.getItem("authToken"));
+  const loggedInEmail = localStorage.getItem("userEmail");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let data;
     try {
-      const { data } = await axios.post("/api/v1/openai/explanation", {
+      data = await axios.post("/api/v1/openai/explanation", {
         text
       });
       console.log(data.message);
-      setExplanation(data.data);
+      setExplanation(data.data.data);
     } catch (err) {
       console.log(err);
       if (err.response.data.error) {
@@ -38,6 +42,17 @@ const Explanation = () => {
         setError("");
       }, 5000);
     }
+    const userPrompt = text + " \n Explanation: ";
+    try {
+      await axios.post('/api/v1/record/save-record', {
+        Userprompt: userPrompt,
+        GeneratedResult: data.data.data,
+        userEmail: loggedInEmail
+      });
+      console.log('Record saved!');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleCopy = () => {
@@ -48,7 +63,8 @@ const Explanation = () => {
   };
 
   return (
-    <Box
+    <>
+    {loggedIn ? (<Box
       width={isNotMobile ? "40%" : "80%"}
       p={"2rem"}
       m={"2rem auto"}
@@ -65,7 +81,8 @@ const Explanation = () => {
         <Typography variant="h3">Code-Explanation</Typography>
         <TextField
           label="Enter the Code to be explained"
-          type="text"
+          type="textarea"
+          multiline
           required
           margin="normal"
           fullWidth
@@ -139,7 +156,11 @@ const Explanation = () => {
           </Typography>
         </Card>
       )}
-    </Box>
+    </Box>) : (
+      < Login />
+    )}
+    </>
+    
   );
 };
 

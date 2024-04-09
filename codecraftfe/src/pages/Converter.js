@@ -6,8 +6,9 @@ import axios from "axios";
 import { Box, Typography, useTheme, useMediaQuery, TextField, Button, Alert, Collapse, Card, IconButton, Select, MenuItem, FormControl, InputLabel} from "@mui/material";
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import Code from "@mui/icons-material/Code";
+import Login from "./Login";
 
-const Generator = () => {
+const Converter = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   //media
@@ -17,18 +18,21 @@ const Generator = () => {
   const [error, setError] = useState("");
   const [language, setLanguage] = useState(""); 
   const [convertedCode, setConvertedCode] = useState("");
+  const loggedIn = JSON.parse(localStorage.getItem("authToken"));
   // Add this state variable for the selected language
 
   const languages = ["JavaScript", "Python", "Java", "C#", "C++", "PHP", "Swift", "Go", "Kotlin", "Ruby", "TypeScript", "Rust", "Scala", "Perl", "Lua"]; // Add this array of languages
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let data;
     try {
-      const { data } = await axios.post('/api/v1/openai/converter', {
+      const response = await axios.post('/api/v1/openai/converter', {
         code,
         language // Include the selected language in the request body
       });
-      console.log(data.message);
+      console.log(response.message);
+      data = response.data; // Save the response data to a variable
       setConvertedCode(data.data); // Set the converted code here
     } catch (err) {
       console.log(err);
@@ -41,6 +45,19 @@ const Generator = () => {
         setError("");
       }, 5000);
     }
+    const loggedInEmail = localStorage.getItem("userEmail");
+  
+    const userPrompt = code + " convert to " +  language;
+    try {
+      await axios.post('/api/v1/record/save-record', {
+        Userprompt: userPrompt,
+        GeneratedResult: data.data, // Use the same data variable here
+        userEmail: loggedInEmail
+      });
+      console.log('Record saved!');
+    } catch (err) {
+      console.error(err);
+    }
   };
   
   // Update the handleCopy function to copy the convertedCode
@@ -50,7 +67,8 @@ const Generator = () => {
   };
 
   return (
-    <Box
+    <>
+    {loggedIn ? (<Box
       width={isNotMobile ? "50%" : "80%"}
       p={"2rem"}
       m={"2rem auto"}
@@ -67,6 +85,7 @@ const Generator = () => {
         <Typography variant="h3">Code Converter</Typography>
         <TextField
           label="Enter Your Code Here"
+          multiline
           type="textarea"
           required
           margin="normal"
@@ -156,8 +175,10 @@ const Generator = () => {
     </Typography>
   </Card>
 )}
-    </Box>
+    </Box>) : ( <Login /> ) }
+    
+    </>
   );
 };
 
-export default Generator;
+export default Converter;

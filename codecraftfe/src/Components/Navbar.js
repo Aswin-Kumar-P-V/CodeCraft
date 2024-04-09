@@ -34,8 +34,11 @@ const Navbar = () => {
       </Typography>
       {loggedIn ? (
         <>
-          <NavLink to="/" p={1}>
+          <NavLink to="/tools" p={1}>
             Home
+          </NavLink>
+          <NavLink to="/dash" p={1}>
+            DashBoard
           </NavLink>
           <NavLink to="/login" onClick={handleLogout} p={1}>
             Logout

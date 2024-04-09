@@ -5,6 +5,7 @@ import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import { Box, Typography, useTheme, useMediaQuery, TextField, Button, Alert, Collapse, Card, IconButton } from "@mui/material";
 import FileCopyIcon from '@mui/icons-material/FileCopy';
+import Login from "./Login";
 
 
 const Commenter = () => {
@@ -16,15 +17,18 @@ const Commenter = () => {
   const [text, settext] = useState("");
   const [comment, setcomment] = useState("");
   const [error, setError] = useState("");
+  const loggedIn = JSON.parse(localStorage.getItem("authToken"));
+  const loggedInEmail = localStorage.getItem("userEmail");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let data;
     try {
-      const { data } = await axios.post('/api/v1/openai/commenter', {
+      data = await axios.post('/api/v1/openai/commenter', {
         text
       });
       console.log(data.message);
-      setcomment(data.data);
+      setcomment(data.data.data);
     } catch (err) {
       console.log(err);
       if (err.response.data.error) {
@@ -36,6 +40,17 @@ const Commenter = () => {
         setError("");
       }, 5000);
     }
+    const userPrompt = text +"\n" + "After Adding Comments : ";
+    try {
+      await axios.post('/api/v1/record/save-record', {
+        Userprompt: userPrompt,
+        GeneratedResult: data.data.data,
+        userEmail: loggedInEmail
+      });
+      console.log('Record saved!');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleCopy = () => {
@@ -44,7 +59,8 @@ const Commenter = () => {
   };
 
   return (
-    <Box
+    <>
+    {loggedIn ? (<Box
       width={isNotMobile ? "40%" : "80%"}
       p={"2rem"}
       m={"2rem auto"}
@@ -61,6 +77,7 @@ const Commenter = () => {
         <Typography variant="h3">Add Comments</Typography>
         <TextField
           label="enter the code to add comments to"
+          multiline
           type="text"
           required
           margin="normal"
@@ -132,7 +149,9 @@ const Commenter = () => {
           </Typography>
         </Card>
       )}
-    </Box>
+    </Box> ) :( < Login />)}
+    </>
+    
   );
 };
 

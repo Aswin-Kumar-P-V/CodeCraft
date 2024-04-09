@@ -3,6 +3,7 @@ import {Link,useNavigate} from 'react-router-dom'
 import { useState } from 'react';
 import toast,{Toaster} from 'react-hot-toast';
  import axios from "axios";
+ import Login from './Login';
 
 import {
   Box,
@@ -25,6 +26,7 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const loggedIn = JSON.parse(localStorage.getItem("authToken"));
 
   const handleSubmit = async(e) => {
     e.preventDefault();
@@ -49,7 +51,8 @@ const Register = () => {
   }
 
     return (
-        <Box
+      <>
+      {loggedIn ? (  <Box
       width={isNotMobile ? "40%" : "80%"}
       p={"2rem"}
       m={"2rem auto"}
@@ -109,7 +112,9 @@ const Register = () => {
           Already have an account ? <Link to="/login">Please Login</Link>
         </Typography>
       </form>
-    </Box>
+    </Box>) : (<Login/>)}
+      </>
+      
     )
 }
 

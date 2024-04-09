@@ -6,6 +6,7 @@ import axios from "axios";
 import { Box, Typography, useTheme, useMediaQuery, TextField, Button, Alert, Collapse, Card, IconButton } from  "@mui/material";
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import Dashboard from "./Dashboard";
+import Login from "./Login";
 
 
 const Optimization = () => {
@@ -17,15 +18,18 @@ const Optimization = () => {
   const [text, settext] = useState("");
   const [code, setcode] = useState("");
   const [error, setError] = useState("");
+  const loggedIn = JSON.parse(localStorage.getItem("authToken"));
+  const loggedInEmail = localStorage.getItem("userEmail");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let data;
     try {
-      const { data } = await axios.post(`/api/v1/openai/optimization`, {
+      data = await axios.post(`/api/v1/openai/optimization`, {
         text
       });
       console.log(data.message);
-      setcode(data.data);
+      setcode(data.data.data);
     } catch (err) {
       console.log(err);
       if (err.response.data.error) {
@@ -37,6 +41,17 @@ const Optimization = () => {
         setError("");
       }, 5000);
     }
+    const userPrompt = text +" After optimization : ";
+    try {
+      await axios.post('/api/v1/record/save-record', {
+        Userprompt: userPrompt,
+        GeneratedResult: data.data.data,
+        userEmail: loggedInEmail
+      });
+      console.log('Record saved!');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleCopy = () => {
@@ -47,7 +62,8 @@ const Optimization = () => {
   };
 
   return (
-    <Box
+    <>
+    {loggedIn ? (<Box
       width={isNotMobile ? "40%" : "80%"}
       p={"2rem"}
       m={"2rem auto"}
@@ -64,6 +80,7 @@ const Optimization = () => {
         <Typography variant="h3">Code-Optimizer</Typography>
         <TextField
           label="enter the code to be optimized"
+          multiline
           type="text"
           required
           margin="normal"
@@ -134,7 +151,8 @@ const Optimization = () => {
           </Typography>
         </Card>
       )}
-    </Box>
+    </Box>):(<Login/>)}
+    </>
   );
 };
 

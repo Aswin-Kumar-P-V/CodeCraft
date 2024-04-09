@@ -20,6 +20,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import SendIcon from "@mui/icons-material/Send";
 import BuildIcon from "@mui/icons-material/Build";
+import Login from "./Login";
 
 const examples = [
   "Suggest beautiful places to see on an upcoming road trip",
@@ -33,6 +34,7 @@ const Dashboard = () => {
   const [title, setTitle] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [input, setInput] = useState("");
+  const loggedIn = JSON.parse(localStorage.getItem("authToken"));
 
   const handleSend = async () => {
     if (input.trim()) {
@@ -66,7 +68,8 @@ const Dashboard = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", height: "100vh", bgcolor: "#050509" }}>
+    <>
+    {loggedIn ? (<Box sx={{ display: "flex", height: "100vh", bgcolor: "#050509" }}>
       <Box sx={{ width: "20%", bgcolor: "#0c0c15", color: "white", p: 2 }}>
         <Box sx={{ height: "5%" }}>
           <Button
@@ -247,7 +250,9 @@ const Dashboard = () => {
           </Box>
         </Box>
       </Box>
-    </Box>
+    </Box> ) : ( <Login /> ) }
+    
+  </>
   );
 };
 

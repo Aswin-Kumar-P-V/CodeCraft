@@ -2,36 +2,42 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import Login from "./Login";
 import axios from "axios";
 import { Box, Typography, useTheme, useMediaQuery, TextField, Button, Alert, Collapse, Card, IconButton, Select, MenuItem } from "@mui/material";
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import Code from "@mui/icons-material/Code";
 
+
 const Generator = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  //media
+  //media  
   const isNotMobile = useMediaQuery("(min-width: 1000px)");
   //fields
   const [text, settext] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [language, setLanguage] = useState(""); // Add this state variable for the selected language
-
+  const loggedIn = JSON.parse(localStorage.getItem("authToken"));
+  const loggedInEmail = localStorage.getItem("userEmail");
+  
   const languages = ["JavaScript", "Python", "Java", "C#", "C++", "PHP", "Swift", "Go", "Kotlin", "Ruby", "TypeScript", "Rust", "Scala", "Perl", "Lua"]; // Add this array of languages
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let data;
     try {
-      const { data } = await axios.post('/api/v1/openai/prompt', {
+      const response = await axios.post('/api/v1/openai/prompt', {
         text,
         language // Include the selected language in the request body
       });
+      data = response.data;
       console.log(data.message);
       setCode(data.data);
     } catch (err) {
       console.log(err);
-      if (err.response.data.error) {
+      if (err.response && err.response.data.error) {
         setError(err.response.data.error);
       } else if (err.message) {
         setError(err.message);
@@ -39,6 +45,19 @@ const Generator = () => {
       setTimeout(() => {
         setError("");
       }, 5000);
+    }
+  
+    const userPrompt = text + " In the language " + language;
+  
+    try {
+      await axios.post('/api/v1/record/save-record', {
+        Userprompt: userPrompt,
+        GeneratedResult: data.data,
+        userEmail: loggedInEmail
+      });
+      console.log('Record saved!');
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -48,7 +67,8 @@ const Generator = () => {
   };
 
   return (
-    <Box
+    <>
+    {loggedIn ? (<Box
       width={isNotMobile ? "70%" : "80%"}
       p={"2rem"}
       m={"2rem auto"}
@@ -65,6 +85,7 @@ const Generator = () => {
         <Typography variant="h3">Prompt To Code</Typography>
         <TextField
           label="enter the prompt to generate the code"
+          multiline
           type="text"
           required
           margin="normal"
@@ -147,7 +168,9 @@ const Generator = () => {
           </Typography>
         </Card>
       )}
-    </Box>
+    </Box>) : (<Login />)}
+    </>
+    
   );
 };
 

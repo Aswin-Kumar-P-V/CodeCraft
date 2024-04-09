@@ -5,6 +5,7 @@ import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import { Box, Typography, useTheme, useMediaQuery, TextField, Button, Alert, Collapse, Card, IconButton } from  "@mui/material";
 import FileCopyIcon from '@mui/icons-material/FileCopy';
+import Login from "./Login";
 
 
 const Refactor = () => {
@@ -16,15 +17,17 @@ const Refactor = () => {
   const [text, settext] = useState("");
   const [refactor, setrefactor] = useState("");
   const [error, setError] = useState("");
-
+  const loggedIn = JSON.parse(localStorage.getItem("authToken"));
+  const loggedInEmail = localStorage.getItem("userEmail");
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let data;
     try {
-      const { data } = await axios.post(`/api/v1/openai/refactor` , {
+      data= await axios.post(`/api/v1/openai/refactor` , {
         text
       });
       console.log(data.message);
-      setrefactor(data.data);
+      setrefactor(data.data.data);
     } catch (err) {
       console.log(err);
       if (err.response.data.error) {
@@ -36,6 +39,17 @@ const Refactor = () => {
         setError("");
       }, 5000);
     }
+    const userPrompt = text + "\n After Refactoring : ";
+    try {
+      await axios.post('/api/v1/record/save-record', {
+        Userprompt: userPrompt,
+        GeneratedResult: data.data.data, // Use the same data variable here
+        userEmail: loggedInEmail
+      });
+      console.log('Record saved!');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleCopy = () => {
@@ -46,7 +60,8 @@ const Refactor = () => {
   };
 
   return (
-    <Box
+    <>
+    {loggedIn ? (<Box
       width={isNotMobile ? "40%" : "80%"}
       p={"2rem"}
       m={"2rem auto"}
@@ -63,6 +78,7 @@ const Refactor = () => {
         <Typography variant="h3">Refactor-Code</Typography>
         <TextField
           label="Refactor the code"
+          multiline
           type="text"
           required
           margin="normal"
@@ -133,7 +149,9 @@ const Refactor = () => {
           </Typography>
         </Card>
       )}
-    </Box>
+    </Box>):(<Login/>)}
+    </>
+    
   );
 };
 
