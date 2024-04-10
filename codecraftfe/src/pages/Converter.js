@@ -7,6 +7,7 @@ import { Box, Typography, useTheme, useMediaQuery, TextField, Button, Alert, Col
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import Code from "@mui/icons-material/Code";
 import Login from "./Login";
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 const Converter = () => {
   const theme = useTheme();
@@ -20,6 +21,8 @@ const Converter = () => {
   const [convertedCode, setConvertedCode] = useState("");
   const loggedIn = JSON.parse(localStorage.getItem("authToken"));
   // Add this state variable for the selected language
+  const [recordId, setRecordId] = useState(null); // Add this state variable
+  const [isFavorite, setIsFavorite] = useState(false); // Add this state variable
 
   const languages = ["JavaScript", "Python", "Java", "C#", "C++", "PHP", "Swift", "Go", "Kotlin", "Ruby", "TypeScript", "Rust", "Scala", "Perl", "Lua"]; // Add this array of languages
 
@@ -48,16 +51,14 @@ const Converter = () => {
     const loggedInEmail = localStorage.getItem("userEmail");
   
     const userPrompt = code + " convert to " +  language;
-    try {
-      await axios.post('/api/v1/record/save-record', {
-        Userprompt: userPrompt,
-        GeneratedResult: data.data, // Use the same data variable here
-        userEmail: loggedInEmail
-      });
-      console.log('Record saved!');
-    } catch (err) {
-      console.error(err);
-    }
+    const response = await axios.post('/api/v1/record/save-record', {
+      Userprompt: userPrompt,
+      GeneratedResult: data.data,
+      userEmail: loggedInEmail
+    });
+    console.log('Record saved! ID:', response.data.id);
+    setRecordId(response.data.id); // Save the record ID here
+    // ...
   };
   
   // Update the handleCopy function to copy the convertedCode
@@ -66,6 +67,24 @@ const Converter = () => {
     toast.success('Copied to clipboard');
   };
 
+  const handleHeartClick = async () => {
+    console.log('Heart button clicked');
+    console.log('Record ID:', recordId);
+
+    try {
+      const response = await axios.put(`/api/v1/record/update-record/${recordId}`, {
+        isFavorite: !isFavorite,
+      });
+
+      if (response.status === 200) {
+        setIsFavorite(!isFavorite);
+        toast.success(isFavorite ? 'Removed from favorites' : 'Added to favorites');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to update favorite status');
+    }
+  };
   return (
     <>
     {loggedIn ? (<Box
@@ -149,6 +168,13 @@ const Converter = () => {
     >
       <FileCopyIcon />
     </IconButton>
+    <IconButton 
+            aria-label="heart" 
+            onClick={handleHeartClick}
+            sx={{ position: 'absolute', top: 8, right: 48 }}
+          >
+            <FavoriteIcon color={isFavorite ? 'error' : 'action'} />
+          </IconButton>
   </Card>
 ) : (
   <Card

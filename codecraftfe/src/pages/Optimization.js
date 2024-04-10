@@ -7,6 +7,7 @@ import { Box, Typography, useTheme, useMediaQuery, TextField, Button, Alert, Col
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import Dashboard from "./Dashboard";
 import Login from "./Login";
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'; // Import the FavoriteBorderIcon
 
 
 const Optimization = () => {
@@ -20,6 +21,8 @@ const Optimization = () => {
   const [error, setError] = useState("");
   const loggedIn = JSON.parse(localStorage.getItem("authToken"));
   const loggedInEmail = localStorage.getItem("userEmail");
+  const [recordId, setRecordId] = useState(null); // Add this line
+  const [isFavorite, setIsFavorite] = useState(false); // Add this line
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,12 +46,13 @@ const Optimization = () => {
     }
     const userPrompt = text +" After optimization : ";
     try {
-      await axios.post('/api/v1/record/save-record', {
+      const response = await axios.post('/api/v1/record/save-record', {
         Userprompt: userPrompt,
         GeneratedResult: data.data.data,
         userEmail: loggedInEmail
       });
       console.log('Record saved!');
+      setRecordId(response.data.id); // Add this line
     } catch (err) {
       console.error(err);
     }
@@ -58,6 +62,24 @@ const Optimization = () => {
     if (code) {
       navigator.clipboard.writeText(code);
       toast.success("Copied to clipboard");
+    }
+  };
+  const handleHeartClick = async () => { // Add this function
+    console.log('Heart button clicked');
+    console.log('Record ID:', recordId);
+
+    try {
+      const response = await axios.put(`/api/v1/record/update-record/${recordId}`, {
+        isFavorite: !isFavorite,
+      });
+
+      if (response.status === 200) {
+        setIsFavorite(!isFavorite);
+        toast.success(isFavorite ? 'Removed from favorites' : 'Added to favorites');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to update favorite status');
     }
   };
 
@@ -124,6 +146,13 @@ const Optimization = () => {
             sx={{ position: 'absolute', top: 8, right: 8 }} // Position the button at the top right corner of the Card
           >
             <FileCopyIcon />
+          </IconButton>
+          <IconButton // Add this button
+            aria-label="heart" 
+            onClick={handleHeartClick}
+            sx={{ position: 'absolute', top: 8, right: 48 }}
+          >
+            <FavoriteBorderIcon />
           </IconButton>
         </Card>
       ) : (

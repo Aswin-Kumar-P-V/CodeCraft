@@ -5,6 +5,8 @@ import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import { Box, Typography, useTheme, useMediaQuery, TextField, Button, Alert, Collapse, Card, IconButton } from "@mui/material";
 import FileCopyIcon from '@mui/icons-material/FileCopy';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+
 import Login from "./Login";
 
 
@@ -19,6 +21,9 @@ const Commenter = () => {
   const [error, setError] = useState("");
   const loggedIn = JSON.parse(localStorage.getItem("authToken"));
   const loggedInEmail = localStorage.getItem("userEmail");
+  const [recordId, setRecordId] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,12 +47,13 @@ const Commenter = () => {
     }
     const userPrompt = text +"\n" + "After Adding Comments : ";
     try {
-      await axios.post('/api/v1/record/save-record', {
+      const response = await axios.post('/api/v1/record/save-record', {
         Userprompt: userPrompt,
         GeneratedResult: data.data.data,
         userEmail: loggedInEmail
       });
-      console.log('Record saved!');
+      console.log('Record saved! ID:', response.data.id);
+      setRecordId(response.data.id);
     } catch (err) {
       console.error(err);
     }
@@ -56,6 +62,25 @@ const Commenter = () => {
   const handleCopy = () => {
     navigator.clipboard.writeText(comment);
     toast.success('Copied to clipboard');
+  };
+
+  const handleHeartClick = async () => {
+    console.log('Heart button clicked');
+    console.log('Record ID:', recordId);
+  
+    try {
+      const response = await axios.put(`/api/v1/record/update-record/${recordId}`, {
+        isFavorite: !isFavorite,
+      });
+  
+      if (response.status === 200) {
+        setIsFavorite(!isFavorite);
+        toast.success(isFavorite ? 'Removed from favorites' : 'Added to favorites');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to update favorite status');
+    }
   };
 
   return (
@@ -122,6 +147,13 @@ const Commenter = () => {
             sx={{ position: 'absolute', top: 8, right: 8 }} // Position the button at the top right corner of the Card
           >
             <FileCopyIcon />
+          </IconButton>
+          <IconButton 
+            aria-label="heart" 
+            onClick={handleHeartClick}
+            sx={{ position: 'absolute', top: 8, right: 48 }}
+          >
+            <FavoriteIcon color={isFavorite ? 'error' : 'action'} />
           </IconButton>
         </Card>
       ) : (

@@ -207,7 +207,7 @@ async function commentsController(req, res) {
       const response1 = await openai.chat.completions.create({
         model: "gpt-3.5-turbo-0125",
         messages: [
-          { role: "system", content: `only give the code , add comment to the give code${text}` },
+          { role: "system", content: `only give the code , add comments to the given code so that to improve the codes readablity ${text}` },
           { role: "user", content: text },
         ],
         temperature: 0.7,

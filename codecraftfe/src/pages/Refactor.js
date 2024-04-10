@@ -6,6 +6,7 @@ import axios from "axios";
 import { Box, Typography, useTheme, useMediaQuery, TextField, Button, Alert, Collapse, Card, IconButton } from  "@mui/material";
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import Login from "./Login";
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 
 const Refactor = () => {
@@ -19,6 +20,10 @@ const Refactor = () => {
   const [error, setError] = useState("");
   const loggedIn = JSON.parse(localStorage.getItem("authToken"));
   const loggedInEmail = localStorage.getItem("userEmail");
+  const [recordId, setRecordId] = useState(null); // Add useState for recordId
+  const [isFavorite, setIsFavorite] = useState(false); // Add useState for isFavorite
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     let data;
@@ -41,21 +46,42 @@ const Refactor = () => {
     }
     const userPrompt = text + "\n After Refactoring : ";
     try {
-      await axios.post('/api/v1/record/save-record', {
+      const response = await axios.post('/api/v1/record/save-record', {
         Userprompt: userPrompt,
-        GeneratedResult: data.data.data, // Use the same data variable here
+        GeneratedResult: data.data.data,
         userEmail: loggedInEmail
       });
-      console.log('Record saved!');
+      console.log('Record saved! ID:', response.data.id);
+      setRecordId(response.data.id);
     } catch (err) {
       console.error(err);
     }
+    console.log(recordId);
   };
 
   const handleCopy = () => {
     if (refactor) {
       navigator.clipboard.writeText(refactor);
       toast.success("Copied to clipboard");
+    }
+  };
+
+  const handleHeartClick = async () => {
+    console.log('Heart button clicked');
+    console.log('Record ID:', recordId);
+  
+    try {
+      const response = await axios.put(`/api/v1/record/update-record/${recordId}`, {
+        isFavorite: !isFavorite,
+      });
+  
+      if (response.status === 200) {
+        setIsFavorite(!isFavorite);
+        toast.success(isFavorite ? 'Removed from favorites' : 'Added to favorites');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to update favorite status');
     }
   };
 
@@ -114,14 +140,22 @@ const Refactor = () => {
             position: 'relative', // Add this line
           }}
         >
-          <Typography p={2} sx={{ whiteSpace: "pre-line" }}>
+          <Typography p={2} sx={{ whiteSpace: "pre-line" }}> 
             {refactor}
           </Typography>
           <IconButton 
+            aria-label="copy to clipboard" 
             onClick={handleCopy}
             sx={{ position: 'absolute', top: 8, right: 8 }} // Position the button at the top right corner of the Card
           >
             <FileCopyIcon />
+          </IconButton>
+          <IconButton 
+            aria-label="heart" 
+            onClick={handleHeartClick}
+            sx={{ position: 'absolute', top: 8, right: 48 }}
+          >
+            <FavoriteIcon color={isFavorite ? 'error' : 'action'} />
           </IconButton>
         </Card>
       ) : (

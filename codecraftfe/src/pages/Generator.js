@@ -7,22 +7,22 @@ import axios from "axios";
 import { Box, Typography, useTheme, useMediaQuery, TextField, Button, Alert, Collapse, Card, IconButton, Select, MenuItem } from "@mui/material";
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import Code from "@mui/icons-material/Code";
-
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 const Generator = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  //media  
   const isNotMobile = useMediaQuery("(min-width: 1000px)");
-  //fields
   const [text, settext] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
-  const [language, setLanguage] = useState(""); // Add this state variable for the selected language
+  const [language, setLanguage] = useState("");
   const loggedIn = JSON.parse(localStorage.getItem("authToken"));
   const loggedInEmail = localStorage.getItem("userEmail");
+  const [recordId, setRecordId] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
   
-  const languages = ["JavaScript", "Python", "Java", "C#", "C++", "PHP", "Swift", "Go", "Kotlin", "Ruby", "TypeScript", "Rust", "Scala", "Perl", "Lua"]; // Add this array of languages
+  const languages = ["JavaScript", "Python", "Java", "C#", "C++", "PHP", "Swift", "Go", "Kotlin", "Ruby", "TypeScript", "Rust", "Scala", "Perl", "Lua"];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,7 +30,7 @@ const Generator = () => {
     try {
       const response = await axios.post('/api/v1/openai/prompt', {
         text,
-        language // Include the selected language in the request body
+        language
       });
       data = response.data;
       console.log(data.message);
@@ -50,12 +50,13 @@ const Generator = () => {
     const userPrompt = text + " In the language " + language;
   
     try {
-      await axios.post('/api/v1/record/save-record', {
+      const response = await axios.post('/api/v1/record/save-record', {
         Userprompt: userPrompt,
         GeneratedResult: data.data,
         userEmail: loggedInEmail
       });
-      console.log('Record saved!');
+      console.log('Record saved! ID:', response.data.id);
+      setRecordId(response.data.id);
     } catch (err) {
       console.error(err);
     }
@@ -64,6 +65,25 @@ const Generator = () => {
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
     toast.success('Copied to clipboard');
+  };
+
+  const handleHeartClick = async () => {
+    console.log('Heart button clicked');
+    console.log('Record ID:', recordId);
+  
+    try {
+      const response = await axios.put(`/api/v1/record/update-record/${recordId}`, {
+        isFavorite: !isFavorite,
+      });
+  
+      if (response.status === 200) {
+        setIsFavorite(!isFavorite);
+        toast.success(isFavorite ? 'Removed from favorites' : 'Added to favorites');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to update favorite status');
+    }
   };
 
   return (
@@ -129,7 +149,7 @@ const Generator = () => {
             borderRadius: 5,
             borderColor: "natural.medium",
             bgcolor: "background.default",
-            position: 'relative', // Add this to position the IconButton absolutely within the Card
+            position: 'relative',
           }}
         >
           <Typography p={2} sx={{ whiteSpace: "pre-line" }}>
@@ -138,10 +158,18 @@ const Generator = () => {
           <IconButton 
             aria-label="copy to clipboard" 
             onClick={handleCopy}
-            sx={{ position: 'absolute', top: 8, right: 8 }} // Position the button at the top right corner of the Card
+            sx={{ position: 'absolute', top: 8, right: 8 }}
           >
             <FileCopyIcon />
           </IconButton>
+          <IconButton 
+            aria-label="heart" 
+            onClick={handleHeartClick}
+            sx={{ position: 'absolute', top: 8, right: 48 }}
+          >
+            <FavoriteIcon color={isFavorite ? 'error' : 'action'} />
+          </IconButton>
+          
         </Card>
       ) : (
         <Card
